@@ -20,7 +20,7 @@ def trigrams(words):
     zzz (8, 9)
     
     """
-    
+
     oldtrigram = None
     trigram = None
     #result = []
@@ -31,7 +31,7 @@ def trigrams(words):
     for word in words:
         if word == oldword:
             print word
-            continue # this is a hack - not sure why we get to this point sometimes.
+            continue # this is a hack - fix has to do with case inconsistency on non-valid words
         assert word > oldword, "input data is not sorted!"
         oldword = word
         trigram = word[:3]

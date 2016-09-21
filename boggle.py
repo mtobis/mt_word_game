@@ -149,9 +149,6 @@ class Boggle:
         # working on this
         
         """
-        
-        #whoa last test!
-        
         from string import lowercase
         from adjacency import adjacency, triplets, newseqs
 
@@ -187,9 +184,12 @@ class Boggle:
         self.y = y
         self.dim = dim = x * y
         self.adjacent = adjacency(x,y)
+
+        #print self.adjacency
         
         self.triplets = triplets(self.adjacent)
         self.solutions = []
+        #self.mat = [[0 for i in range(dim)] for j in range(dim)]
         
         if not data:
             self.data = None
@@ -221,6 +221,7 @@ class Boggle:
 
         self.wordlist = WordList(wordfile)
         self.candidates = self.validtriplets()
+        #self.solve()
 
     def __str__(self):
         repr = []
@@ -241,13 +242,18 @@ class Boggle:
         Verbose = False
         mytrigram = {}
         import collections
+        #mytrigram = collections.defaultdict(list)
         myranges = {}
         for triplet in self.triplets:
             a,b,c = triplet
             data = self.data
             if data:
                 testTriple = "" + data[a] + data[b] + data[c]
+                #print testTriple
+                #import pdb; pdb.set_trace()
                 if testTriple in wordlist.validTriples:
+                    #mytrigram[triplet] = testTriple
+                    #mytrigram[testTriple] = triplet
                     mytrigram.setdefault(testTriple,[]).append(triplet)
                     
                     if Verbose: print triplet, testTriple
@@ -256,6 +262,12 @@ class Boggle:
         if Verbose:
             print type(mytrigram)
         return mytrigram
+
+
+    """
+    def isvalid(self,sequence):
+        pass
+    """
          
     def solve(self, wordlist = None, Verbose=False):
         """
@@ -273,12 +285,17 @@ class Boggle:
             
             result = []
             if candidate in wordsublist:
+                #print "FOUND!!!" + candidate   #, sequence
                 result.append(candidate)
+            #else:
+            #    print "NOT " + candidate
             from adjacency import newseqs
             newseqlist = newseqs(self.adjacent,sequence)
+            #import pdb;pdb.set_trace()
             
             for newseq in newseqlist:
                 newcand = candidate + self.data[newseq[-1]]
+                #print newcand
                 newsublist = [word for word in wordsublist if word.startswith(newcand)]
                 if newsublist: 
                     r = iteration(newcand,newseq,wordsublist)
@@ -291,6 +308,8 @@ class Boggle:
         
         words = self.wordlist.words
         trigrams = self.wordlist.trigrams
+        
+        #self.solutions = []
 
         redundantSolutions = []
         
@@ -306,18 +325,30 @@ class Boggle:
         t2 = clock()
         if Verbose: print t2 - t1
 
-def printlist(mylist,text=None):
-    if mylist:
-        if text:
-            print text
-        count = 0
-        for item in mylist:
-            count += 1
-            Item = item
-            if len(item) > 6: Item = item.upper()
+'''def solveSequence(self,sequence,data,adjacency,wordlist,range):
+    """ recursively finds all valid sequences """
+
+    # results = [] (or a set)
+
+    # if sequence in wordlist and sequence not in results add sequence to set
+
+    # get extensions to sequence
+
+    # if valid extension, solveSequence on it
+'''
+
+def printlist(mylist):
+    count = 0
+    for item in mylist:
+        count += 1
+        Item = item
+        if len(item) > 6:
+            Item = item.upper()
             print Item,"\t",
-            if not count % 5: print
-        print
+        else:
+            print item,"\t\t",
+        if not count % 5: print
+    print
                     
 if __name__ == "__main__":
     Debug = False
@@ -338,73 +369,51 @@ if __name__ == "__main__":
         print
     else:
         from sys import argv
-
-        # create puzzle
-        
+        #print len(argv)
         if len(argv) < 2:
             seed = "_random"
         else:
             seed = argv[-1]
         b=Boggle(seed,wordfile="Dicts/words.txt")
-
-        # display puzzle
-        
         print 5 * "\n"
         print b
         b.solve()
-        print "There are %d words in the dictionary" % len(b.solutions)
-        print "The longest word has %d letters" % max(map(len,b.solutions))
-        raw_input("\n\nhit RETURN to proceed")
+        print "there are", len(b.solutions), "words in this Boggle"
+        print "enter your words, one per line"
+        print "enter _x on a new line when you are done"
         
-        # get user input
-
-        if not "-c" in argv:
-            import curses
-            from bogg_curs import draw1
-            print b
-            myanswers = curses.wrapper(draw1,b.data)
-        else:
-            a = ""
-            myanswers = []
-            while not a.startswith("__"):
-                if(a): myanswers.append(a)
-                a = raw_input("> ")
-
-        # find results
-
+        a = ""
+        myanswers = []
+        while not a.startswith("_x"):
+            if(a): myanswers.append(a)
+            a = raw_input("> ")
+  
         count = 0
-
         solutions = b.solutions
         got = [answer for answer in myanswers if answer in solutions]
-
+        print "\n You found:"
+        printlist(got)
         missed = [answer for answer in solutions if answer not in myanswers]
         #import pdb; pdb.set_trace()
-        #print "\n You missed:"
-        #printlist(missed)
-
-        disputed = None
-        bogus = None
-                
+        print "\n You missed:"
+        printlist(missed)
         dubious = [answer for answer in myanswers if answer not in solutions]
         if dubious:
+            # print "\n Disputed or bogus:"
+            # printlist(dubious)
 
             # set up tests
 
-            # avoid clobbering b.wordlist, b.candiates here (?) YAGNI (?) 
+            # avoid clobbering b here (?) YAGNI (?)
             
-            b.wordlist = WordList(sorted(dubious)) #looking for words in this dictionary
+            b.wordlist = WordList(sorted(dubious)) #looking for words in this dictionay
             b.candidates = b.validtriplets() #looking for valid initial sequences
-            
             b.solve()
             disputed = b.solutions
+            if disputed:
+                print "\n Disputed:"
+                printlist(disputed)
             bogus = [item for item in dubious if not item in disputed]
-        
-        # report results
-
-        print
-        print 70 * "*"
-        print
-        printlist(got,"\n You found \n")
-        printlist(missed,"\n You missed \n")
-        printlist(disputed,"\n Not in the dictionary \n")
-        printlist(bogus,"\n Not in this puzzle \n")
+            if bogus:
+                print "\n Bogus:"
+                printlist(bogus)
