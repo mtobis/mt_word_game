@@ -1,3 +1,12 @@
+helptext = """You are looking for dictionary words in this grid, connected horizontally, vertically or diagonally, without reusing a position.
+There are %d words in this grid. The longest word has %d letters.
+
+enter your words, one per line
+enter _x on a new line when you are done
+enter _r to reprint the puzzle grid
+enter ? or _h to reprint these instructions
+"""
+
 class WordList:
     def __init__(self,wordfile=None):
         """
@@ -375,26 +384,36 @@ if __name__ == "__main__":
         else:
             seed = argv[-1]
         b=Boggle(seed,wordfile="Dicts/words.txt")
-        print 5 * "\n"
+        print "\n",
         print b
         b.solve()
-        print "there are", len(b.solutions), "words in this Boggle"
-        print "enter your words, one per line"
-        print "enter _x on a new line when you are done"
+        maxlen = max([len(item) for item in b.solutions])
+        print helptext % (len(b.solutions),maxlen)
         
         a = ""
         myanswers = []
-        while not a.startswith("_x"):
-            if(a): myanswers.append(a)
+        while True:
+            if a.startswith("_x"):
+                break
+            if(a):
+                if a.startswith("_r"):
+                    print b
+                elif a.startswith("?") or a.startswith("_h"):
+                    print b
+                    print helptext % (len(b.solutions),maxlen)
+                else:
+                    myanswers.append(a)
             a = raw_input("> ")
   
         count = 0
         solutions = b.solutions
         got = [answer for answer in myanswers if answer in solutions]
+
+        print b
         print "\n You found:"
         printlist(got)
         missed = [answer for answer in solutions if answer not in myanswers]
-        #import pdb; pdb.set_trace()
+
         print "\n You missed:"
         printlist(missed)
         dubious = [answer for answer in myanswers if answer not in solutions]
@@ -415,5 +434,5 @@ if __name__ == "__main__":
                 printlist(disputed)
             bogus = [item for item in dubious if not item in disputed]
             if bogus:
-                print "\n Bogus:"
+                print "\n Not valid in this grid:"
                 printlist(bogus)
