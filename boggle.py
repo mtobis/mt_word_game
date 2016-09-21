@@ -1,3 +1,5 @@
+from string import ascii_lowercase as lcalphas
+
 helptext = """You are looking for dictionary words in this grid, connected horizontally, vertically or diagonally, without reusing a position.
 There are %d words in this grid. The longest word has %d letters.
 
@@ -6,6 +8,8 @@ enter _x on a new line when you are done
 enter _r to reprint the puzzle grid
 enter ? or _h to reprint these instructions
 """
+
+
 
 class WordList:
     def __init__(self,wordfile=None):
@@ -402,37 +406,45 @@ if __name__ == "__main__":
                     print b
                     print helptext % (len(b.solutions),maxlen)
                 else:
-                    myanswers.append(a)
+                    a = a.strip().lower()
+                    if a.isalpha():
+                        if a in myanswers:
+                            print "duplicate entry, ignored"
+                        else:
+                            myanswers.append(a)
+                    else:
+                        badchars = ''.join([ch for ch in a if ch not in lcalphas])
+                        print "bad character(s) '%s' in string '%s', entry ignored" % (badchars,a)
             a = raw_input("> ")
   
         count = 0
-        solutions = b.solutions
-        got = [answer for answer in myanswers if answer in solutions]
+        got = [answer for answer in myanswers if answer in b.solutions]
 
-        print b
+        print "\n",b
         print "\n You found:"
         printlist(got)
-        missed = [answer for answer in solutions if answer not in myanswers]
+        missed = [answer for answer in b.solutions if answer not in myanswers]
 
         print "\n You missed:"
         printlist(missed)
-        dubious = [answer for answer in myanswers if answer not in solutions]
-        if dubious:
-            # print "\n Disputed or bogus:"
-            # printlist(dubious)
 
-            # set up tests
+        print "\n You found %s out of %s solutions." %(len(got),len(b.solutions))
 
-            # avoid clobbering b here (?) YAGNI (?)
-            
-            b.wordlist = WordList(sorted(dubious)) #looking for words in this dictionay
-            b.candidates = b.validtriplets() #looking for valid initial sequences
+        # might be better to separate out the non-words and the invalid paths on the fly
+        # but would add complexity
+        
+        # note that b is clobbered here, assuming no further use of it
+
+        dubious = [answer for answer in myanswers if answer not in b.solutions]
+        if dubious:            
+            b.wordlist = WordList(sorted(dubious)) #looking for the unfound entries in the grid
+            b.candidates = b.validtriplets() 
             b.solve()
-            disputed = b.solutions
+            disputed = b.solutions # this yields a list of sequences that don't match the wordlist but are valid paths in the matrix 
             if disputed:
                 print "\n Disputed:"
                 printlist(disputed)
-            bogus = [item for item in dubious if not item in disputed]
+            bogus = [item for item in dubious if not item in disputed] # the residual just aren't real sequences
             if bogus:
                 print "\n Not valid in this grid:"
                 printlist(bogus)

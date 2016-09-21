@@ -29,9 +29,6 @@ def trigrams(words):
     count = 0
     oldword = "   "            
     for word in words:
-        if word == oldword:
-            print word
-            continue # this is a hack - fix has to do with case inconsistency on non-valid words
         assert word > oldword, "input data is not sorted!"
         oldword = word
         trigram = word[:3]
