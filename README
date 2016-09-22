@@ -1,2 +1,40 @@
 Boggle like game.
 Easy usage: python boggle.py
+
+More complex usage: python boggle.py <paramfilename>
+
+paramfile contains an eval-friendly dict containing
+
+{
+"data": <data or seed>,
+"x": <number of columns>,
+"y": <number of rows>,
+"wordfile": <path to word list>,
+}
+
+e.g., 
+
+{
+"data": "_random",
+"x": 4,
+"y": 4,
+"wordfile": "Dicts/words.txt"
+}
+
+there is optionally a fifth key, "scrabble", which implements a bag of tiles, each with an alphabetic character.
+
+please use lowercase only
+
+e.g.
+
+{
+"data": "_random",
+"x": 4,
+"y": 4,
+"wordfile": "Dicts/words.txt",
+"scrabble": "bbbbbbbaaaaaaaoooooooklmn"
+}
+
+This will create a matrix mostly of "b"s, "o"s and "a"s.
+
+

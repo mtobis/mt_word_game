@@ -333,26 +333,6 @@ if __name__ == "__main__":
 
         from sys import argv
 
-
-        
-        
-        """
-        if not len(argv) > 1:
-            
-        seed = "_random"
-        """
-        
-        
-        if len(argv) < 2:
-            seed = "_random"
-        else:
-            seed = argv[-1]
-        b=Boggle(seed,wordfile="Dicts/words.txt")
-        print "\n",
-        
-        ######
-        ######
-
         if len(argv) == 1:
             fnam = ".bogglerc"
         else:
@@ -363,12 +343,10 @@ if __name__ == "__main__":
             text = runparams.read()
             px = eval(text)
             print px
-        b = Boggle(px["data"],px["x"],px["y"],px["wordfile"])
-
-        
-        ######
-        ######
-
+        if "scrabble" not in px.keys():
+            b = Boggle(px["data"],px["x"],px["y"],px["wordfile"])
+        else:
+            b = Boggle(px["data"],px["x"],px["y"],px["wordfile"],px["scrabble"])
                 
         print b
         b.solve()
