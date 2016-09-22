@@ -68,7 +68,7 @@ class WordList:
         
 
 class Boggle:
-    def __init__(self,data="",x=4,y=4,wordfile=None):
+    def __init__(self,data="",x=4,y=4,wordfile=None,scrabble=None):
         """
         creates a Boggle; can pass in file or filename for word list
 
@@ -165,8 +165,10 @@ class Boggle:
         from string import lowercase
         from adjacency import adjacency, triplets, newseqs
 
+        # 36
         vowels="aaeeeeiiooou"
-        scrabble = ("aaaa" +
+        if scrabble is None:
+            scrabble = ("aaaa" +
                     "bb" +
                     "cc" +
                     "ddddd" +
@@ -174,18 +176,18 @@ class Boggle:
                     "ff" +
                     "ggg" +
                     "hh" +
-                    "iiii" +
+                    "iiiiii" +
                     "j" +
                     "k" +
                     "llll" +
                     "mm" +
                     "nnnnnn" +
-                    "oooo" +
+                    "oooooo" +
                     "ppp" +
                     "rrrrrr" +
                     "ssssss" +
                     "tttttt" +
-                    "uu" +
+                    "uuu" +
                     "v" +
                     "ww" +
                     "x" +
@@ -197,8 +199,8 @@ class Boggle:
         self.y = y
         self.dim = dim = x * y
         self.adjacent = adjacency(x,y)
+        #import pdb; pdb.set_trace()
 
-        #print self.adjacency
         
         self.triplets = triplets(self.adjacent)
         self.solutions = []
@@ -216,10 +218,10 @@ class Boggle:
                 elif data[0] == "_":
                     if data.startswith("_random"):
                         from random import seed, choice
-                        if len(data) == len("_random"): #true random
+                        if len(data) == len("_random"): #true random if data == "_random"
                             seed(None)
                         else:
-                            rseed = data[len("_random"):]
+                            rseed = data[len("_random"):] # seed is whatever follows "_random"
                             seed(rseed)
                         data = []
                         for i in range(dim):
@@ -251,36 +253,20 @@ class Boggle:
         return "".join(repr)
 
     def validtriplets(self,wordlist=None):
+        "checks which triplets have matches in the wordlist"
+        
         if wordlist is None: wordlist = self.wordlist
-        Verbose = False
         mytrigram = {}
-        import collections
-        #mytrigram = collections.defaultdict(list)
         myranges = {}
         for triplet in self.triplets:
             a,b,c = triplet
             data = self.data
             if data:
                 testTriple = "" + data[a] + data[b] + data[c]
-                #print testTriple
-                #import pdb; pdb.set_trace()
                 if testTriple in wordlist.validTriples:
-                    #mytrigram[triplet] = testTriple
-                    #mytrigram[testTriple] = triplet
                     mytrigram.setdefault(testTriple,[]).append(triplet)
-                    
-                    if Verbose: print triplet, testTriple
-                else:
-                    if Verbose: print "NOT " + testTriple
-        if Verbose:
-            print type(mytrigram)
         return mytrigram
 
-
-    """
-    def isvalid(self,sequence):
-        pass
-    """
          
     def solve(self, wordlist = None, Verbose=False):
         """
@@ -293,22 +279,20 @@ class Boggle:
 
         def iteration(candidate,sequence,wordsublist):
             """
-            for a candidate sequence, add it if it's a word, and
+            for a candidate sequence, add it if it's a word
+
+            recursive call looking for each character in the wordlist
             """
-            
+
+            from adjacency import newseqs
+                        
             result = []
             if candidate in wordsublist:
-                #print "FOUND!!!" + candidate   #, sequence
                 result.append(candidate)
-            #else:
-            #    print "NOT " + candidate
-            from adjacency import newseqs
             newseqlist = newseqs(self.adjacent,sequence)
-            #import pdb;pdb.set_trace()
             
             for newseq in newseqlist:
                 newcand = candidate + self.data[newseq[-1]]
-                #print newcand
                 newsublist = [word for word in wordsublist if word.startswith(newcand)]
                 if newsublist: 
                     r = iteration(newcand,newseq,wordsublist)
@@ -316,14 +300,9 @@ class Boggle:
                         result += r
             return result
 
-        if wordlist is None:
-            wordlist = self.wordlist
-        
         words = self.wordlist.words
         trigrams = self.wordlist.trigrams
         
-        #self.solutions = []
-
         redundantSolutions = []
         
         c = self.candidates
@@ -331,24 +310,11 @@ class Boggle:
         for triplet in sorted(c.keys()):
             r1,r2 = trigrams[triplet]
             for sequence in c[triplet]:
-                #import pdb; pdb.set_trace()
                 redundantSolutions += iteration(triplet,sequence,words[r1:r2])
 
         self.solutions = sorted([item for item in set(redundantSolutions)])
         t2 = clock()
         if Verbose: print t2 - t1
-
-'''def solveSequence(self,sequence,data,adjacency,wordlist,range):
-    """ recursively finds all valid sequences """
-
-    # results = [] (or a set)
-
-    # if sequence in wordlist and sequence not in results add sequence to set
-
-    # get extensions to sequence
-
-    # if valid extension, solveSequence on it
-'''
 
 def printlist(mylist):
     count = 0
@@ -364,33 +330,49 @@ def printlist(mylist):
     print
                     
 if __name__ == "__main__":
-    Debug = False
-    if Debug:
-        b = Boggle("_randomized",wordfile="Dicts/words.txt")
-        print b
-        b.solve(1)
 
-        print "\n%d solutions found\n" % len(b.solutions)
-        #count = 0
-        for item in b.solutions:
-            count += 1
-            Item = item
-            if len(item) > 6: Item = item.upper()
-            print Item,"\t",
-
-            if not count % 5: print
-        print
-    else:
         from sys import argv
-        #print len(argv)
+
+
+        
+        
+        """
+        if not len(argv) > 1:
+            
+        seed = "_random"
+        """
+        
+        
         if len(argv) < 2:
             seed = "_random"
         else:
             seed = argv[-1]
         b=Boggle(seed,wordfile="Dicts/words.txt")
         print "\n",
+        
+        ######
+        ######
+
+        if len(argv) == 1:
+            fnam = ".bogglerc"
+        else:
+            fnam = argv[1]
+
+        with file(fnam) as runparams:
+            #import pdb; pdb.set_trace()
+            text = runparams.read()
+            px = eval(text)
+            print px
+        b = Boggle(px["data"],px["x"],px["y"],px["wordfile"])
+
+        
+        ######
+        ######
+
+                
         print b
         b.solve()
+        
         maxlen = max([len(item) for item in b.solutions])
         print helptext % (len(b.solutions),maxlen)
         

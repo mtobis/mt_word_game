@@ -1,4 +1,4 @@
-def adjacency(rows,cols):
+def adjacency(cols,rows):
     """ returns an (NxM) x (NxM) matrix of zeros except ones for
     king's-move adjacent cells
 
@@ -30,6 +30,7 @@ def adjacency(rows,cols):
         downbad = row == rows - 1
         leftbad = col == 0
         rightbad = col == cols - 1
+
         for dir in dirs:
             row,col = divmod(longrow,cols)
             bad = (   ("l" in dir and leftbad)
