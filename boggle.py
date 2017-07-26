@@ -1,7 +1,10 @@
 from string import ascii_lowercase as lcalphas
 
 helptext = """You are looking for dictionary words in this grid, connected horizontally, vertically or diagonally, without reusing a position.
-There are %d words in this grid. The longest word has %d letters.
+
+There are %d words in this grid. 
+
+The longest word has %d letters.
 
 enter your words, one per line
 enter _x on a new line when you are done
